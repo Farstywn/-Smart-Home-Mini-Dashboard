@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "author": "LuminaSmart Team",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 20, "left": 100, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht", "top": -120, "left": -80, "attrs": { "temperature": "28.5", "humidity": "64" } },
+    { "type": "wokwi-photoresistor-sensor", "id": "ldr", "top": 120, "left": -90, "attrs": {} },
+    { "type": "wokwi-led", "id": "led_living", "top": -90, "left": 360, "attrs": { "color": "red", "label": "Lampu Ruang Tamu (GPIO 18)" } },
+    { "type": "wokwi-resistor", "id": "r1", "top": -50, "left": 310, "attrs": { "value": "220" } },
+    { "type": "wokwi-led", "id": "led_porch", "top": 30, "left": 360, "attrs": { "color": "green", "label": "Lampu Teras (GPIO 19)" } },
+    { "type": "wokwi-resistor", "id": "r2", "top": 70, "left": 310, "attrs": { "value": "220" } },
+    { "type": "wokwi-led", "id": "led_fan", "top": 150, "left": 360, "attrs": { "color": "yellow", "label": "Kipas Angin (GPIO 23)" } },
+    { "type": "wokwi-resistor", "id": "r3", "top": 190, "left": 310, "attrs": { "value": "220" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+
+    [ "esp:3V3", "dht:VCC", "red", [ "v0" ] ],
+    [ "esp:GND.1", "dht:GND", "black", [ "v0" ] ],
+    [ "esp:15", "dht:SDA", "orange", [ "v-30", "h-140" ] ],
+
+    [ "esp:3V3", "ldr:VCC", "red", [ "v30", "h-80" ] ],
+    [ "esp:GND.1", "ldr:GND", "black", [ "v40", "h-80" ] ],
+    [ "esp:34", "ldr:AO", "purple", [ "v50", "h-140" ] ],
+
+    [ "esp:18", "r1:1", "red", [ "h40", "v-60" ] ],
+    [ "r1:2", "led_living:A", "red", [ "h20" ] ],
+    [ "led_living:C", "esp:GND.2", "black", [ "h30", "v120", "h-120" ] ],
+
+    [ "esp:19", "r2:1", "green", [ "h40", "v0" ] ],
+    [ "r2:2", "led_porch:A", "green", [ "h20" ] ],
+    [ "led_porch:C", "esp:GND.2", "black", [ "h30", "v50", "h-120" ] ],
+
+    [ "esp:23", "r3:1", "gold", [ "h40", "v50" ] ],
+    [ "r3:2", "led_fan:A", "gold", [ "h20" ] ],
+    [ "led_fan:C", "esp:GND.2", "black", [ "h30", "v-30", "h-120" ] ]
+  ],
+  "dependencies": {}
+}
