@@ -111,10 +111,11 @@ iot/
 4. Klik tab **Import**, pilih file `database/schema.sql` dari folder proyek ini, lalu klik **Go / Kirim**.
 
 ### 2. Membuka Dashboard di Browser
-1. Buka browser dan akses alamat:
+1. Buka browser dan akses alamat (sesuai port Apache XAMPP Anda):
    ```
-   http://localhost/iot/
+   http://localhost:8080/iot/
    ```
+   *(Catatan: Jika Apache Anda berjalan di port default 80, gunakan `http://localhost/iot/`).*
 2. Anda akan langsung melihat dashboard aktif. Coba klik saklar pada kartu lampu atau klik tombol **Tes Simulasi Sensor** untuk melihat respon langsung pada grafik!
 
 ---
@@ -130,10 +131,10 @@ iot/
 > **Cara termudah:**
 > 1. Unduh dan jalankan [ngrok](https://ngrok.com/):
 >    ```bash
->    ngrok http 80
+>    ngrok http 8080
 >    ```
 > 2. Salin URL publik ngrok Anda (contoh: `https://abcd-1234.ngrok-free.app`).
-> 3. Buka file `sketch.ino` baris ke-35, lalu ubah variabel `API_URL`:
+> 3. Buka file `sketch.ino` baris ke-41, lalu ubah variabel `API_URL`:
 >    ```cpp
 >    const char* API_URL = "https://abcd-1234.ngrok-free.app/iot/api/esp32.php";
 >    ```

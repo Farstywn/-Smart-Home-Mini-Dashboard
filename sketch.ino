@@ -32,13 +32,13 @@ const char* WIFI_PASSWORD = "";
 // langsung memanggil 'http://localhost'.
 // 
 // Cara termudah menghubungkan Wokwi ke XAMPP lokal Anda:
-// 1. Jalankan ngrok di terminal laptop: `ngrok http 80`
+// 1. Jalankan ngrok di terminal laptop: `ngrok http 8080`
 // 2. Ganti API_URL di bawah ini dengan URL ngrok Anda, contoh:
 //    "https://xxxx-xx-xx-xx.ngrok-free.app/iot/api/esp32.php"
 // 
-// Jika menggunakan ESP32 Fisik (bukan simulator), cukup gunakan IP lokal laptop:
-//    "http://192.168.1.10/iot/api/esp32.php"
-const char* API_URL = "http://localhost/iot/api/esp32.php"; 
+// Jika menggunakan ESP32 Fisik (bukan simulator), gunakan IP lokal laptop:
+//    "http://192.168.1.10:8080/iot/api/esp32.php"
+const char* API_URL = "http://localhost:8080/iot/api/esp32.php"; 
 
 // --- DEFINISI PIN GPIO ---
 #define DHTPIN        15    // Pin data sensor DHT22
