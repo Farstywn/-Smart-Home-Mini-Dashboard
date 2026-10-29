@@ -27,12 +27,9 @@ const char* WIFI_SSID     = "Wokwi-GUEST";
 const char* WIFI_PASSWORD = "";
 
 // --- KONFIGURASI API BACKEND ---
-// PENTING UNTUK WOKWI SIMULATOR:
-// Di dalam Wokwi, kata 'localhost' merujuk ke ESP32 itu sendiri (bukan laptop Anda).
-// Wokwi menyediakan hostname khusus: "host.wokwi.internal" untuk mengakses localhost PC.
-// Jika host.wokwi.internal tidak merespon, firmware akan otomatis mencoba IP laptop Anda.
-const char* API_URL          = "http://host.wokwi.internal:8080/iot/api/esp32.php"; 
-const char* API_FALLBACK_URL = "http://192.168.1.4:8080/iot/api/esp32.php";
+// Tunnel publik yang aktif langsung menghubungkan Wokwi Web ke XAMPP laptop Anda:
+const char* API_URL          = "https://floppy-pans-grow.loca.lt/iot/api/esp32.php"; 
+const char* API_FALLBACK_URL = "http://host.wokwi.internal:8080/iot/api/esp32.php";
 
 // --- DEFINISI PIN GPIO ---
 #define DHTPIN        15    // Pin data sensor DHT22
@@ -150,20 +147,22 @@ void syncWithBackend(float temp, float hum, int light) {
 
   HTTPClient http;
   
-  // Coba URL Utama (host.wokwi.internal)
+  // Coba URL Utama
   http.begin(API_URL);
   http.addHeader("Content-Type", "application/json");
-  http.setTimeout(2000);
+  http.addHeader("Bypass-Tunnel-Reminder", "true");
+  http.setTimeout(3500);
 
   int httpResponseCode = http.POST(requestBody);
   String activeUrl = API_URL;
 
-  // Jika gagal, coba URL Fallback (IP LAN Laptop)
+  // Jika gagal, coba URL Fallback
   if (httpResponseCode <= 0) {
     http.end();
     http.begin(API_FALLBACK_URL);
     http.addHeader("Content-Type", "application/json");
-    http.setTimeout(2000);
+    http.addHeader("Bypass-Tunnel-Reminder", "true");
+    http.setTimeout(3500);
     httpResponseCode = http.POST(requestBody);
     activeUrl = API_FALLBACK_URL;
   }
