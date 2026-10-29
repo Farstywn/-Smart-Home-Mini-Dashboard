@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuminaSmart IoT - Smart Home Dashboard</title>
+    <meta name="description" content="Dashboard Kontrol dan Monitoring Rumah Pintar IoT Terintegrasi ESP32 dan XAMPP">
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Custom Modern Stylesheet -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <!-- Top Navigation / Header -->
+        <header class="main-header glass-panel">
+            <div class="brand-wrapper">
+                <div class="brand-icon">⚡</div>
+                <div>
+                    <h1 class="brand-title">LuminaSmart IoT</h1>
+                    <div class="brand-subtitle">
+                        <span>Smart Home Automation & Telemetry</span>
+                        <span>•</span>
+                        <span id="digital-clock" class="clock-display">Memuat jam...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-status-group">
+                <div id="connection-status" class="status-badge">
+                    <span class="pulse-dot"></span> Memeriksa Sistem...
+                </div>
+            </div>
+        </header>
+
+        <!-- Setup Alert Banner (jika database belum siap) -->
+        <div id="setup-alert" class="setup-alert-banner">
+            <div class="setup-alert-icon">⚠️</div>
+            <div class="setup-alert-content">
+                <h4>Database Belum Dikonfigurasi</h4>
+                <p>Silakan buat database <code>smarthome_db</code> di phpMyAdmin dan import file <code>database/schema.sql</code>.</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Controls Bar -->
+        <section class="quick-actions-bar">
+            <div class="actions-left">
+                <button id="btn-all-on" class="btn btn-primary" title="Nyalakan seluruh peralatan yang terhubung">
+                    <span>💡</span> Nyalakan Semua
+                </button>
+                <button id="btn-all-off" class="btn btn-danger-outline" title="Matikan seluruh peralatan">
+                    <span>🌑</span> Matikan Semua
+                </button>
+            </div>
+
+            <div class="actions-right">
+                <button id="btn-simulate" class="btn btn-secondary" title="Simulasikan pembacaan sensor baru untuk menguji grafik">
+                    <span>🎲</span> Tes Simulasi Sensor
+                </button>
+                <button id="btn-refresh" class="btn btn-secondary" title="Segarkan data seketika">
+                    <span>🔄</span> Refresh
+                </button>
+            </div>
+        </section>
+
+        <!-- Environmental & Power Metrics -->
+        <section class="metrics-grid">
+            <!-- Suhu Ruangan -->
+            <div class="metric-card glass-panel metric-temp">
+                <div class="metric-header">
+                    <span class="metric-title">Suhu Ruangan</span>
+                    <div class="metric-icon">🌡️</div>
+                </div>
+                <div class="metric-value-wrapper">
+                    <span id="val-temp" class="metric-value">--.-</span>
+                    <span class="metric-unit">°C</span>
+                </div>
+                <div class="metric-footer">
+                    <span>Sensor: DHT22 (Wokwi / Hardware)</span>
+                </div>
+            </div>
+
+            <!-- Kelembaban Udara -->
+            <div class="metric-card glass-panel metric-hum">
+                <div class="metric-header">
+                    <span class="metric-title">Kelembaban Udara</span>
+                    <div class="metric-icon">💧</div>
+                </div>
+                <div class="metric-value-wrapper">
+                    <span id="val-hum" class="metric-value">--.-</span>
+                    <span class="metric-unit">%</span>
+                </div>
+                <div class="metric-footer">
+                    <span>Kondisi ruang terpantau stabil</span>
+                </div>
+            </div>
+
+            <!-- Konsumsi Daya Aktif -->
+            <div class="metric-card glass-panel metric-power">
+                <div class="metric-header">
+                    <span class="metric-title">Konsumsi Daya</span>
+                    <div class="metric-icon">⚡</div>
+                </div>
+                <div class="metric-value-wrapper">
+                    <span id="val-power" class="metric-value">0 W</span>
+                </div>
+                <div class="metric-footer">
+                    <span>Estimasi pemakaian real-time</span>
+                </div>
+            </div>
+
+            <!-- Perangkat Aktif -->
+            <div class="metric-card glass-panel metric-devices">
+                <div class="metric-header">
+                    <span class="metric-title">Status Saklar Aktif</span>
+                    <div class="metric-icon">🔌</div>
+                </div>
+                <div class="metric-value-wrapper">
+                    <span id="val-active" class="metric-value">0 / 0</span>
+                </div>
+                <div class="metric-footer">
+                    <span>Perangkat menyala saat ini</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Devices Section Header -->
+        <div class="section-title-wrap">
+            <h2 class="section-title">
+                <span>🎛️</span> Kontrol Lampu & Saklar Rumah
+            </h2>
+            <span style="font-size: 0.82rem; color: var(--text-secondary);">Sinkronisasi Dua Arah (Web ⇋ ESP32)</span>
+        </div>
+
+        <!-- Devices Grid -->
+        <section id="devices-grid" class="devices-grid">
+            <!-- Diisi secara dinamis oleh JavaScript -->
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-secondary);">
+                Memuat data saklar lampu...
+            </div>
+        </section>
+
+        <!-- Charts & Logs Section -->
+        <section class="charts-grid">
+            <!-- Line Chart Tren Sensor -->
+            <div class="chart-card glass-panel">
+                <div class="chart-card-header">
+                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff;">📈 Riwayat Suhu & Kelembaban</h3>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Update Otomatis Tiap Siklus</span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Aktivitas Log Terbaru -->
+            <div class="logs-card glass-panel">
+                <div class="chart-card-header">
+                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff;">📜 Log Aktivitas Saklar</h3>
+                </div>
+                <div id="activity-list" class="activity-list">
+                    <div class="activity-item">
+                        <div>
+                            <strong>Sistem Dimulai</strong>
+                            <div style="font-size: 0.72rem; color: #64748b;">Menunggu aksi pengguna</div>
+                        </div>
+                        <span class="activity-badge on">READY</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="dashboard-footer">
+            <p>Smart Home Mini Dashboard IoT • Terintegrasi ESP32 Wokwi Simulator & Apache MySQL XAMPP</p>
+        </footer>
+
+    </div>
+
+    <!-- Application Script -->
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
