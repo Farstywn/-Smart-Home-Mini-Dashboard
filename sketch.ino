@@ -27,32 +27,26 @@ const char* WIFI_SSID     = "Wokwi-GUEST";
 const char* WIFI_PASSWORD = "";
 
 // --- KONFIGURASI API BACKEND ---
-// CATATAN PENTING UNTUK WOKWI:
-// Karena simulasi Wokwi berjalan di cloud browser sandbox, Wokwi tidak bisa
-// langsung memanggil 'http://localhost'.
-// 
-// Cara termudah menghubungkan Wokwi ke XAMPP lokal Anda:
-// 1. Jalankan ngrok di terminal laptop: `ngrok http 8080`
-// 2. Ganti API_URL di bawah ini dengan URL ngrok Anda, contoh:
-//    "https://xxxx-xx-xx-xx.ngrok-free.app/iot/api/esp32.php"
-// 
-// Jika menggunakan ESP32 Fisik (bukan simulator), gunakan IP lokal laptop:
-//    "http://192.168.1.10:8080/iot/api/esp32.php"
-const char* API_URL = "http://localhost:8080/iot/api/esp32.php"; 
+// PENTING UNTUK WOKWI SIMULATOR:
+// Di dalam Wokwi, kata 'localhost' merujuk ke ESP32 itu sendiri (bukan laptop Anda).
+// Wokwi menyediakan hostname khusus: "host.wokwi.internal" untuk mengakses localhost PC.
+// Jika host.wokwi.internal tidak merespon, firmware akan otomatis mencoba IP laptop Anda.
+const char* API_URL          = "http://host.wokwi.internal:8080/iot/api/esp32.php"; 
+const char* API_FALLBACK_URL = "http://192.168.1.4:8080/iot/api/esp32.php";
 
 // --- DEFINISI PIN GPIO ---
 #define DHTPIN        15    // Pin data sensor DHT22
 #define DHTTYPE       DHT22 // Tipe sensor DHT 22 (AM2302)
 #define LDRPIN        34    // Pin analog LDR Cahaya
 
-#define PIN_LAMP_LIVING  18 // Lampu Ruang Tamu
-#define PIN_LAMP_PORCH   19 // Lampu Teras
-#define PIN_FAN_BEDROOM  23 // Kipas Angin
+#define PIN_LAMP_LIVING  18 // Lampu Ruang Tamu (LED Merah)
+#define PIN_LAMP_PORCH   19 // Lampu Teras (LED Hijau)
+#define PIN_FAN_BEDROOM  23 // Kipas Angin (LED Kuning)
 
 DHT dht(DHTPIN, DHTTYPE);
 
-// Interval sinkronisasi (dalam milidetik)
-const unsigned long SYNC_INTERVAL = 3000;
+// Interval sinkronisasi (dalam milidetik - 1.5 detik agar respon cepat)
+const unsigned long SYNC_INTERVAL = 1500;
 unsigned long lastSyncTime = 0;
 
 void setup() {
@@ -145,10 +139,6 @@ void syncWithBackend(float temp, float hum, int light) {
     return;
   }
 
-  HTTPClient http;
-  http.begin(API_URL);
-  http.addHeader("Content-Type", "application/json");
-
   // Siapkan Payload JSON pengiriman telemetri
   StaticJsonDocument<256> docSend;
   docSend["temp"]  = round(temp * 10) / 10.0;
@@ -158,12 +148,28 @@ void syncWithBackend(float temp, float hum, int light) {
   String requestBody;
   serializeJson(docSend, requestBody);
 
-  Serial.printf("📤 Mengirim data ke: %s\n", API_URL);
+  HTTPClient http;
+  
+  // Coba URL Utama (host.wokwi.internal)
+  http.begin(API_URL);
+  http.addHeader("Content-Type", "application/json");
+  http.setTimeout(2000);
+
   int httpResponseCode = http.POST(requestBody);
+  String activeUrl = API_URL;
+
+  // Jika gagal, coba URL Fallback (IP LAN Laptop)
+  if (httpResponseCode <= 0) {
+    http.end();
+    http.begin(API_FALLBACK_URL);
+    http.addHeader("Content-Type", "application/json");
+    http.setTimeout(2000);
+    httpResponseCode = http.POST(requestBody);
+    activeUrl = API_FALLBACK_URL;
+  }
 
   if (httpResponseCode > 0) {
     String responseString = http.getString();
-    Serial.printf("📥 Respon HTTP (%d): %s\n", httpResponseCode, responseString.c_str());
 
     // Parse JSON respon dari backend
     StaticJsonDocument<512> docReceive;
@@ -172,24 +178,23 @@ void syncWithBackend(float temp, float hum, int light) {
     if (!error && docReceive.containsKey("relays")) {
       JsonArray relays = docReceive["relays"].as<JsonArray>();
 
-      Serial.println("🔌 [STATUS RELAY DITERIMA]");
       for (JsonObject relay : relays) {
         int pin   = relay["pin"];
         int state = relay["state"];
         String code = relay["code"] | "perangkat";
 
-        // Terapkan ke pin GPIO ESP32
+        // Terapkan ke pin GPIO ESP32 & LED Simulator
         pinMode(pin, OUTPUT);
         digitalWrite(pin, state == 1 ? HIGH : LOW);
 
-        Serial.printf("   ➜ GPIO %d (%s) => %s\n", pin, code.c_str(), state == 1 ? "ON (HIGH)" : "OFF (LOW)");
+        if (state == 1) {
+          Serial.printf("💡 [AKTIF] GPIO %d (%s) => MENYALA\n", pin, code.c_str());
+        }
       }
-    } else {
-      Serial.println("⚠️ Respon backend tidak berisi array relays.");
     }
   } else {
-    Serial.printf("❌ HTTP POST Gagal. Kode error: %d (%s)\n", httpResponseCode, http.errorToString(httpResponseCode).c_str());
-    Serial.println("💡 Tips: Untuk Wokwi, gunakan tunnel seperti ngrok untuk mengekspos http://localhost/iot.");
+    Serial.printf("❌ Gagal terhubung ke API (%s). Error: %d\n", activeUrl.c_str(), httpResponseCode);
+    Serial.println("💡 Tips: Pastikan Apache XAMPP aktif di port 8080.");
   }
 
   http.end();
