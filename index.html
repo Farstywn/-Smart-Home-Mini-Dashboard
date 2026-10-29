@@ -3,175 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LuminaSmart IoT - Smart Home Dashboard</title>
-    <meta name="description" content="Dashboard Kontrol dan Monitoring Rumah Pintar IoT Terintegrasi ESP32 dan XAMPP">
+    <title>Smart Home - Dashboard Kontrol & Telemetri</title>
+    <meta name="description" content="Dashboard kontrol dan pemantauan IoT rumah terintegrasi ESP32">
     
-    <!-- Google Fonts: Plus Jakarta Sans -->
+    <!-- Google Font: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <!-- Custom Modern Stylesheet -->
+    <!-- Minimalist Stylesheet -->
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
     <div class="dashboard-container">
         
-        <!-- Top Navigation / Header -->
-        <header class="main-header glass-panel">
+        <!-- Header -->
+        <header class="main-header">
             <div class="brand-wrapper">
-                <div class="brand-icon">⚡</div>
+                <div class="brand-logo-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                </div>
                 <div>
-                    <h1 class="brand-title">LuminaSmart IoT</h1>
-                    <div class="brand-subtitle">
-                        <span>Smart Home Automation & Telemetry</span>
-                        <span>•</span>
-                        <span id="digital-clock" class="clock-display">Memuat jam...</span>
-                    </div>
+                    <h1 class="brand-title">Smart Home</h1>
+                    <div class="brand-subtitle">Kontrol Perangkat & Telemetri IoT</div>
                 </div>
             </div>
 
             <div class="header-status-group">
+                <span id="digital-clock" class="clock-display">--:--:--</span>
                 <div id="connection-status" class="status-badge">
-                    <span class="pulse-dot"></span> Memeriksa Sistem...
+                    <span class="pulse-dot"></span> Menghubungkan...
                 </div>
             </div>
         </header>
 
-        <!-- Setup Alert Banner (jika database belum siap) -->
+        <!-- Setup Alert Banner -->
         <div id="setup-alert" class="setup-alert-banner">
-            <div class="setup-alert-icon">⚠️</div>
+            <div style="color: var(--accent-amber); padding-top: 2px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
             <div class="setup-alert-content">
                 <h4>Database Belum Dikonfigurasi</h4>
-                <p>Silakan buat database <code>smarthome_db</code> di phpMyAdmin dan import file <code>database/schema.sql</code>.</p>
+                <p>Silakan pastikan MySQL aktif di XAMPP dan database <code>smarthome_db</code> telah di-import.</p>
             </div>
         </div>
 
-        <!-- Quick Actions & Controls Bar -->
+        <!-- Quick Actions Toolbar -->
         <section class="quick-actions-bar">
             <div class="actions-left">
-                <button id="btn-all-on" class="btn btn-primary" title="Nyalakan seluruh peralatan yang terhubung">
-                    <span>💡</span> Nyalakan Semua
+                <button id="btn-all-on" class="btn btn-primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    Nyalakan Semua
                 </button>
-                <button id="btn-all-off" class="btn btn-danger-outline" title="Matikan seluruh peralatan">
-                    <span>🌑</span> Matikan Semua
+                <button id="btn-all-off" class="btn btn-secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                        <line x1="12" y1="2" x2="12" y2="12"></line>
+                    </svg>
+                    Matikan Semua
                 </button>
             </div>
 
             <div class="actions-right">
-                <button id="btn-simulate" class="btn btn-secondary" title="Simulasikan pembacaan sensor baru untuk menguji grafik">
-                    <span>🎲</span> Tes Simulasi Sensor
+                <button id="btn-simulate" class="btn btn-outline" title="Simulasi pembacaan data sensor baru untuk pengujian">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Simulasi Sensor
                 </button>
-                <button id="btn-refresh" class="btn btn-secondary" title="Segarkan data seketika">
-                    <span>🔄</span> Refresh
+                <button id="btn-refresh" class="btn btn-outline" title="Segarkan data seketika">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    Segarkan
                 </button>
             </div>
         </section>
 
-        <!-- Environmental & Power Metrics -->
+        <!-- Metrics Overview -->
         <section class="metrics-grid">
             <!-- Suhu Ruangan -->
-            <div class="metric-card glass-panel metric-temp">
+            <div class="metric-card">
                 <div class="metric-header">
                     <span class="metric-title">Suhu Ruangan</span>
-                    <div class="metric-icon">🌡️</div>
+                    <span class="metric-icon-wrap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+                        </svg>
+                    </span>
                 </div>
                 <div class="metric-value-wrapper">
                     <span id="val-temp" class="metric-value">--.-</span>
                     <span class="metric-unit">°C</span>
                 </div>
-                <div class="metric-footer">
-                    <span>Sensor: DHT22 (Wokwi / Hardware)</span>
-                </div>
+                <div class="metric-footer">Sensor DHT22 (GPIO 15)</div>
             </div>
 
-            <!-- Kelembaban Udara -->
-            <div class="metric-card glass-panel metric-hum">
+            <!-- Kelembaban -->
+            <div class="metric-card">
                 <div class="metric-header">
                     <span class="metric-title">Kelembaban Udara</span>
-                    <div class="metric-icon">💧</div>
+                    <span class="metric-icon-wrap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                        </svg>
+                    </span>
                 </div>
                 <div class="metric-value-wrapper">
                     <span id="val-hum" class="metric-value">--.-</span>
                     <span class="metric-unit">%</span>
                 </div>
-                <div class="metric-footer">
-                    <span>Kondisi ruang terpantau stabil</span>
-                </div>
+                <div class="metric-footer">Rentang nyaman 45% - 70%</div>
             </div>
 
-            <!-- Konsumsi Daya Aktif -->
-            <div class="metric-card glass-panel metric-power">
+            <!-- Daya Aktif -->
+            <div class="metric-card">
                 <div class="metric-header">
-                    <span class="metric-title">Konsumsi Daya</span>
-                    <div class="metric-icon">⚡</div>
+                    <span class="metric-title">Beban Daya</span>
+                    <span class="metric-icon-wrap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </span>
                 </div>
                 <div class="metric-value-wrapper">
-                    <span id="val-power" class="metric-value">0 W</span>
+                    <span id="val-power" class="metric-value">0</span>
+                    <span class="metric-unit">Watt</span>
                 </div>
-                <div class="metric-footer">
-                    <span>Estimasi pemakaian real-time</span>
-                </div>
+                <div class="metric-footer">Estimasi beban perangkat aktif</div>
             </div>
 
-            <!-- Perangkat Aktif -->
-            <div class="metric-card glass-panel metric-devices">
+            <!-- Status Saklar -->
+            <div class="metric-card">
                 <div class="metric-header">
-                    <span class="metric-title">Status Saklar Aktif</span>
-                    <div class="metric-icon">🔌</div>
+                    <span class="metric-title">Perangkat Aktif</span>
+                    <span class="metric-icon-wrap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </span>
                 </div>
                 <div class="metric-value-wrapper">
                     <span id="val-active" class="metric-value">0 / 0</span>
                 </div>
-                <div class="metric-footer">
-                    <span>Perangkat menyala saat ini</span>
-                </div>
+                <div class="metric-footer">Sinkron dengan ESP32</div>
             </div>
         </section>
 
-        <!-- Devices Section Header -->
+        <!-- Devices Section -->
         <div class="section-title-wrap">
-            <h2 class="section-title">
-                <span>🎛️</span> Kontrol Lampu & Saklar Rumah
-            </h2>
-            <span style="font-size: 0.82rem; color: var(--text-secondary);">Sinkronisasi Dua Arah (Web ⇋ ESP32)</span>
+            <h2 class="section-title">Daftar Perangkat</h2>
+            <span class="section-hint">Sinkronisasi 2-Arah (Web & ESP32)</span>
         </div>
 
-        <!-- Devices Grid -->
         <section id="devices-grid" class="devices-grid">
-            <!-- Diisi secara dinamis oleh JavaScript -->
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-secondary);">
-                Memuat data saklar lampu...
+            <!-- Diisi secara dinamis oleh JS -->
+            <div style="grid-column: 1 / -1; padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                Memuat daftar perangkat...
             </div>
         </section>
 
-        <!-- Charts & Logs Section -->
+        <!-- Charts & Activity Log -->
         <section class="charts-grid">
-            <!-- Line Chart Tren Sensor -->
-            <div class="chart-card glass-panel">
+            <div class="chart-card">
                 <div class="chart-card-header">
-                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff;">📈 Riwayat Suhu & Kelembaban</h3>
-                    <span style="font-size: 0.75rem; color: var(--text-muted);">Update Otomatis Tiap Siklus</span>
+                    <h3 class="card-heading">Tren Suhu & Kelembaban</h3>
+                    <span style="font-size: 0.72rem; color: var(--text-dim);">Interval 2.5 Detik</span>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="trendChart"></canvas>
                 </div>
             </div>
 
-            <!-- Aktivitas Log Terbaru -->
-            <div class="logs-card glass-panel">
+            <div class="logs-card">
                 <div class="chart-card-header">
-                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff;">📜 Log Aktivitas Saklar</h3>
+                    <h3 class="card-heading">Aktivitas Terakhir</h3>
                 </div>
                 <div id="activity-list" class="activity-list">
                     <div class="activity-item">
                         <div>
-                            <strong>Sistem Dimulai</strong>
-                            <div style="font-size: 0.72rem; color: #64748b;">Menunggu aksi pengguna</div>
+                            <div class="activity-target">Sistem Siaga</div>
+                            <div class="activity-time">Inisialisasi sesi baru</div>
                         </div>
                         <span class="activity-badge on">READY</span>
                     </div>
@@ -181,7 +218,11 @@
 
         <!-- Footer -->
         <footer class="dashboard-footer">
-            <p>Smart Home Mini Dashboard IoT • Terintegrasi ESP32 Wokwi Simulator & Apache MySQL XAMPP</p>
+            <span>Smart Home Controller • ESP32 & PHP REST API</span>
+            <div class="footer-links">
+                <a href="api/devices.php" target="_blank">API Devices</a>
+                <a href="api/sensors.php" target="_blank">API Sensors</a>
+            </div>
         </footer>
 
     </div>

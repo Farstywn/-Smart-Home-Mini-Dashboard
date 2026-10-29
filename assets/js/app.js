@@ -1,5 +1,5 @@
 /**
- * LuminaSmart IoT - Application Logic & Real-time Integration
+ * Smart Home - Application Logic (Clean & Minimalist)
  */
 
 const API_BASE = 'api';
@@ -21,7 +21,6 @@ const elBtnAllOff = document.getElementById('btn-all-off');
 const elBtnSimulate = document.getElementById('btn-simulate');
 const elBtnRefresh = document.getElementById('btn-refresh');
 
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     initClock();
     initChart();
@@ -34,27 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (elBtnAllOn) elBtnAllOn.addEventListener('click', () => setAllDevices('all_on'));
     if (elBtnAllOff) elBtnAllOff.addEventListener('click', () => setAllDevices('all_off'));
     if (elBtnSimulate) elBtnSimulate.addEventListener('click', simulateSensorData);
-    if (elBtnRefresh) elBtnRefresh.addEventListener('click', () => {
-        fetchAllData(true);
-    });
+    if (elBtnRefresh) elBtnRefresh.addEventListener('click', () => fetchAllData(true));
 });
 
 /**
- * Jam Real-time
+ * Jam Minimalis
  */
 function initClock() {
     function update() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        const dateStr = now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' });
-        if (elClock) elClock.textContent = `📅 ${dateStr} • ⏰ ${timeStr}`;
+        const dateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        if (elClock) elClock.textContent = `${dateStr}, ${timeStr}`;
     }
     update();
     setInterval(update, 1000);
 }
 
 /**
- * Inisialisasi Chart.js untuk Suhu & Kelembaban
+ * Inisialisasi Chart.js Minimalis (Linear/Vercel Style)
  */
 function initChart() {
     const ctx = document.getElementById('trendChart');
@@ -68,53 +65,66 @@ function initChart() {
                 {
                     label: 'Suhu (°C)',
                     data: [],
-                    borderColor: '#f43f5e',
-                    backgroundColor: 'rgba(244, 63, 94, 0.1)',
-                    borderWidth: 2.5,
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 3,
-                    pointHoverRadius: 6
+                    borderColor: '#3b82f6',
+                    borderWidth: 1.8,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    pointHoverBackgroundColor: '#3b82f6',
+                    fill: false
                 },
                 {
                     label: 'Kelembaban (%)',
                     data: [],
-                    borderColor: '#06b6d4',
-                    backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                    borderWidth: 2.5,
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 3,
-                    pointHoverRadius: 6
+                    borderColor: '#10b981',
+                    borderWidth: 1.8,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    pointHoverBackgroundColor: '#10b981',
+                    fill: false
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
             plugins: {
                 legend: {
                     position: 'top',
-                    labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 12 } }
+                    align: 'end',
+                    labels: {
+                        color: '#71717a',
+                        font: { family: 'Plus Jakarta Sans', size: 11 },
+                        boxWidth: 12,
+                        boxHeight: 3,
+                        usePointStyle: false
+                    }
                 },
                 tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
-                    titleColor: '#fff',
-                    bodyColor: '#cbd5e1',
-                    borderColor: 'rgba(255, 255, 255, 0.1)',
-                    borderWidth: 1
+                    backgroundColor: '#18181b',
+                    titleColor: '#f4f4f5',
+                    bodyColor: '#a1a1aa',
+                    borderColor: '#27272a',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 6,
+                    titleFont: { size: 11 },
+                    bodyFont: { size: 11 }
                 }
             },
             scales: {
                 x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.04)' },
-                    ticks: { color: '#64748b', maxTicksLimit: 7 }
+                    grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                    ticks: { color: '#52525b', font: { size: 10 }, maxTicksLimit: 6 }
                 },
                 y: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#64748b' }
+                    grid: { color: 'rgba(255, 255, 255, 0.04)', drawBorder: false },
+                    ticks: { color: '#52525b', font: { size: 10 } }
                 }
             }
         }
@@ -122,7 +132,7 @@ function initChart() {
 }
 
 /**
- * Fetch semua data (Perangkat + Sensor)
+ * Fetch semua data
  */
 async function fetchAllData(manual = false) {
     if (isUpdating && !manual) return;
@@ -147,10 +157,9 @@ async function fetchAllData(manual = false) {
             renderSensors(sensorsRes.latest, sensorsRes.history);
         }
     } catch (err) {
-        console.warn('Gagal menghubungi API:', err);
         showSetupAlert(
             'Tidak dapat terhubung ke Backend API', 
-            'Pastikan XAMPP (Apache & MySQL) aktif dan database smarthome_db sudah diimport di phpMyAdmin.'
+            'Pastikan XAMPP (Apache & MySQL) aktif di port 8080 dan database smarthome_db sudah diimport.'
         );
         updateConnectionStatus(false);
     } finally {
@@ -159,29 +168,27 @@ async function fetchAllData(manual = false) {
 }
 
 /**
- * Render Kartu Perangkat / Saklar
+ * Render Kartu Perangkat
  */
 function renderDevices(devices, summary) {
     if (summary) {
         if (elValActive) elValActive.textContent = `${summary.active_devices} / ${summary.total_devices}`;
-        if (elValPower) elValPower.textContent = `${summary.total_active_power_watt} W`;
+        if (elValPower) elValPower.textContent = summary.total_active_power_watt;
     }
 
     if (!elDeviceGrid) return;
-
-    // Simpan posisi switch agar tidak flicker saat re-render
     elDeviceGrid.innerHTML = '';
 
     devices.forEach(device => {
         const isActive = parseInt(device.status) === 1;
-        const iconInfo = getDeviceIcon(device.device_type, isActive);
+        const iconSvg = getDeviceSvg(device.device_type);
 
         const card = document.createElement('div');
-        card.className = `device-card glass-panel ${isActive ? 'is-active' : ''}`;
+        card.className = `device-card ${isActive ? 'is-active' : ''}`;
         card.innerHTML = `
             <div class="device-top">
-                <div class="device-avatar">
-                    <span class="${iconInfo.anim}">${iconInfo.icon}</span>
+                <div class="device-icon-box">
+                    ${iconSvg}
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="toggle-${device.id}" ${isActive ? 'checked' : ''} onchange="toggleDevice(${device.id})">
@@ -189,18 +196,16 @@ function renderDevices(devices, summary) {
                 </label>
             </div>
             <div class="device-info">
-                <h3 class="device-name">${escapeHtml(device.device_name)}</h3>
-                <div class="device-location">
-                    <span>📍</span> ${escapeHtml(device.room)}
-                </div>
+                <div class="device-name">${escapeHtml(device.device_name)}</div>
+                <div class="device-location">${escapeHtml(device.room)}</div>
                 <div class="device-meta-tags">
                     <span class="tag-badge">GPIO ${device.pin_gpio}</span>
                     <span class="tag-badge">${device.power_watt}W</span>
                 </div>
             </div>
             <div class="device-bottom">
-                <span class="device-status-text">${isActive ? '● AKTIF (ON)' : '○ MATI (OFF)'}</span>
-                <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.72rem;" onclick="toggleDevice(${device.id})">
+                <span class="device-status-text">${isActive ? 'Aktif' : 'Nonaktif'}</span>
+                <button class="btn btn-secondary" style="padding: 3px 9px; font-size: 0.72rem;" onclick="toggleDevice(${device.id})">
                     ${isActive ? 'Matikan' : 'Nyalakan'}
                 </button>
             </div>
@@ -210,24 +215,42 @@ function renderDevices(devices, summary) {
 }
 
 /**
- * Helper icon & animasi berdasarkan tipe alat
+ * SVG Icons Minimalis (Clean Stroke Icons)
  */
-function getDeviceIcon(type, isActive) {
+function getDeviceSvg(type) {
     switch (type) {
         case 'fan':
-            return { icon: '🌀', anim: isActive ? 'fan-spinning' : '' };
+            return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 12a4 4 0 0 0-4-4c-2.5 0-3 2-3 2"></path>
+                <path d="M12 12a4 4 0 0 0 4-4c0-2.5-2-3-2-3"></path>
+                <path d="M12 12a4 4 0 0 0 4 4c2.5 0 3-2 3-2"></path>
+                <path d="M12 12a4 4 0 0 0-4 4c0 2.5 2 3 2 3"></path>
+            </svg>`;
         case 'socket':
-            return { icon: '🔌', anim: '' };
+            return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="9" y1="10" x2="9" y2="14"></line>
+                <line x1="15" y1="10" x2="15" y2="14"></line>
+            </svg>`;
         case 'ac':
-            return { icon: '❄️', anim: '' };
+            return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="2" y1="6" x2="22" y2="6"></line>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <line x1="2" y1="18" x2="22" y2="18"></line>
+            </svg>`;
         case 'light':
         default:
-            return { icon: isActive ? '💡' : '🌑', anim: '' };
+            return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18h6"></path>
+                <path d="M10 22h4"></path>
+                <path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z"></path>
+            </svg>`;
     }
 }
 
 /**
- * Render Metrik & Grafik Sensor
+ * Render Sensor
  */
 function renderSensors(latest, history) {
     if (latest) {
@@ -249,7 +272,7 @@ function renderSensors(latest, history) {
         trendChart.data.labels = labels;
         trendChart.data.datasets[0].data = temps;
         trendChart.data.datasets[1].data = hums;
-        trendChart.update('none'); // smooth without full rebuild
+        trendChart.update('none');
     }
 }
 
@@ -269,12 +292,12 @@ async function toggleDevice(id) {
             fetchAllData(true);
         }
     } catch (e) {
-        console.error('Gagal mengubah status perangkat:', e);
+        console.error('Gagal toggle perangkat:', e);
     }
 }
 
 /**
- * Kontrol Semua Perangkat (ON / OFF Sekaligus)
+ * Set Semua Perangkat
  */
 async function setAllDevices(action) {
     try {
@@ -289,18 +312,17 @@ async function setAllDevices(action) {
             fetchAllData(true);
         }
     } catch (e) {
-        console.error('Gagal menerapkan kontrol massal:', e);
+        console.error('Gagal menerapkan aksi massal:', e);
     }
 }
 
 /**
- * Generator Simulasi Data Sensor untuk Pengujian Web Tanpa Wokwi
+ * Generator Simulasi Data Sensor
  */
 async function simulateSensorData() {
-    // Buat data acak yang realistis
-    const randomTemp = (26.5 + Math.random() * 5).toFixed(1);
-    const randomHum  = (58 + Math.random() * 15).toFixed(1);
-    const randomLight = Math.floor(300 + Math.random() * 500);
+    const randomTemp = (26.5 + Math.random() * 4.5).toFixed(1);
+    const randomHum  = (58 + Math.random() * 12).toFixed(1);
+    const randomLight = Math.floor(300 + Math.random() * 400);
 
     try {
         const res = await fetch(`${API_BASE}/sensors.php`, {
@@ -310,7 +332,7 @@ async function simulateSensorData() {
                 temperature: randomTemp,
                 humidity: randomHum,
                 light_level: randomLight,
-                motion_detected: Math.random() > 0.7 ? 1 : 0
+                motion_detected: 0
             })
         });
         const json = await res.json();
@@ -318,12 +340,12 @@ async function simulateSensorData() {
             fetchAllData(true);
         }
     } catch (e) {
-        console.error('Simulasi gagal dikirim:', e);
+        console.error('Simulasi gagal:', e);
     }
 }
 
 /**
- * Catat aktivitas ke daftar log UI
+ * Catat aktivitas log minimalis
  */
 function logActivity(target, action) {
     if (!elActivityList) return;
@@ -332,15 +354,14 @@ function logActivity(target, action) {
     const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     item.innerHTML = `
         <div>
-            <strong>${escapeHtml(target)}</strong>
-            <div style="font-size: 0.72rem; color: #64748b;">${time} via Web</div>
+            <div class="activity-target">${escapeHtml(target)}</div>
+            <div class="activity-time">${time} via Web</div>
         </div>
         <span class="activity-badge ${action.toLowerCase()}">${action}</span>
     `;
     elActivityList.prepend(item);
 
-    // Batasi list 6 item
-    while (elActivityList.children.length > 6) {
+    while (elActivityList.children.length > 5) {
         elActivityList.removeChild(elActivityList.lastChild);
     }
 }
@@ -349,10 +370,10 @@ function updateConnectionStatus(isOnline) {
     if (!elStatusBadge) return;
     if (isOnline) {
         elStatusBadge.className = 'status-badge';
-        elStatusBadge.innerHTML = '<span class="pulse-dot"></span> Sistem Siaga (Online)';
+        elStatusBadge.innerHTML = '<span class="pulse-dot"></span> Terhubung';
     } else {
         elStatusBadge.className = 'status-badge error';
-        elStatusBadge.innerHTML = '<span class="pulse-dot"></span> Database Offline';
+        elStatusBadge.innerHTML = '<span class="pulse-dot"></span> Offline';
     }
 }
 
@@ -362,7 +383,7 @@ function showSetupAlert(msg, tip) {
     const title = elSetupAlert.querySelector('h4');
     const desc = elSetupAlert.querySelector('p');
     if (title) title.textContent = msg;
-    if (desc) desc.innerHTML = `${tip || ''} <br><br>👉 Jalankan database: buka <code>http://localhost/phpmyadmin</code> dan import file <code>database/schema.sql</code>.`;
+    if (desc) desc.innerHTML = `${tip || ''}`;
 }
 
 function hideSetupAlert() {
