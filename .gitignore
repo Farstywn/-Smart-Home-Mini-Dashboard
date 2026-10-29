@@ -1,0 +1,16 @@
+# Dependencies and IDE files
+.vscode/
+.idea/
+*.log
+*.tmp
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Environment & credentials
+.env
+config.local.php
